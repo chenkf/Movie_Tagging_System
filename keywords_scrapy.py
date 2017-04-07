@@ -18,9 +18,6 @@ html = response.read()
 soup = BeautifulSoup(html, 'html.parser')
 keywords = soup.find_all(class_ = "sodatext")
 
-print keywords
-
 for keyword in keywords:
 
- 	keywordFile.write(str(keyword.string) + " ")
- 	print keyword
+ 	keywordFile.write(str(keyword.a.string) + "\n")
