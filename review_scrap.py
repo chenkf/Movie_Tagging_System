@@ -6,36 +6,39 @@ def tagFilter(tag):
 
 	return (tag.name == "p") and (not tag.has_attr("class")) and (tag.contents[0].name != "b")
 
+titlesIdsFile = open("titles_ids.txt")
 
-id = 'tt0111161'
+for line in titlesIdsFile.readlines():
 
-pageIndex = 0
+	id = line.split("| ")[1][:-1]
 
-reviewFile = open(id, "w")
+	pageIndex = 0
 
-proceed = True
-maxIndex = 1
+	reviewFile = open(id, "w")
 
-while proceed and pageIndex < maxIndex:
+	proceed = True
+	maxIndex = 1
 
-	url = 'http://www.imdb.com/title/' + id + '/reviews?start=' + str(pageIndex * 10)
-	response = urllib2.urlopen(url)
-	html = response.read()
-	soup = BeautifulSoup(html, 'html.parser')
-	reviewsSinglePage = soup.find_all(tagFilter)[1 : -2]
+	while proceed and pageIndex < maxIndex:
 
-	reviews = []
+		url = 'http://www.imdb.com/title/' + id + '/reviews?start=' + str(pageIndex * 10)
+		response = urllib2.urlopen(url)
+		html = response.read()
+		soup = BeautifulSoup(html, 'html.parser')
+		reviewsSinglePage = soup.find_all(tagFilter)[1 : -2]
 
-	if reviewsSinglePage == []:
+		reviews = []
 
-		proceed = False;
+		if reviewsSinglePage == []:
 
-	else:
+			proceed = False;
 
-		reviews.extend(reviewsSinglePage)
-		pageIndex += 1
+		else:
 
-	for review in reviews:
+			reviews.extend(reviewsSinglePage)
+			pageIndex += 1
 
-		reviewStr = re.sub(r"(\r)|(\n)", " ", str(review))
- 		reviewFile.write(re.sub(r"(<p>)|(</p>)|(<br>)|(</br>)|(\r)|(\n)", "", reviewStr) + "\n")
+		for review in reviews:
+
+			reviewStr = re.sub(r"(\r)|(\n)", " ", str(review))
+	 		reviewFile.write(re.sub(r"(<p>)|(</p>)|(<br>)|(</br>)|(\r)|(\n)", "", reviewStr) + "\n")
