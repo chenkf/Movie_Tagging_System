@@ -1,4 +1,5 @@
 import sys
+import os
 import pandas as pd
 '''
 from deep_learning import make_mlp, DenseTransformer
@@ -12,7 +13,11 @@ from keras.wrappers.scikit_learn import KerasClassifier
 # https://www.airpair.com/nlp/keyword-extraction-tutorial
 
 filename = sys.argv[1]
+files = [file for file in os.listdir('.') if filename.startswith("tt")]
+print files
 
+# phrases we wanna extract:
+# 
 def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
     import itertools, nltk, string
     # exclude candidates that are stop words or entirely punctuation
@@ -171,16 +176,22 @@ def extract_candidate_features(candidates, doc_text, doc_excerpt, doc_title):
 
     return candidate_scores
 
+
+
 if __name__ == '__main__':
     with open(filename, "r") as f:
         doc = f.read().replace('\n', ' ')
     #print corpus
     chunks = extract_candidate_chunks(doc)
     print chunks
-    #corpus = []
-
-    # sktf = score_keyphrases_by_tfidf(corpus, 'chunks')
-    # print sktf
+    corpus = []
+    for file in files:
+        with open(file, "r") as f:
+            doc = f.read().replace('\n', ' ')
+            corpus.append(doc)
+    print corpus
+    sktf = score_keyphrases_by_tfidf(corpus, 'chunks')
+    print sktf
     skt = score_keyphrases_by_textrank(doc, 0.2)
     print skt      
     
