@@ -66,7 +66,7 @@ def score_keyphrases_by_tfidf(texts, candidates='chunks'):
     
     return corpus_tfidf, dictionary
 
-def score_keyphrases_by_textrank(text, n_keywords=0.05):
+def score_keyphrases_by_textrank(text, n_keywords=10):
     from itertools import takewhile, tee, izip
     import networkx, nltk
     
@@ -89,8 +89,8 @@ def score_keyphrases_by_textrank(text, n_keywords=0.05):
             graph.add_edge(*sorted([w1, w2]))
     # score nodes using default pagerank algorithm, sort by score, keep top n_keywords
     ranks = networkx.pagerank(graph)
-    if 0 < n_keywords < 1:
-        n_keywords = int(round(len(candidates) * n_keywords))
+    # if 0 < n_keywords < 1:
+    #     n_keywords = int(round(len(candidates) * n_keywords))
     word_ranks = {word_rank[0]: word_rank[1]
                   for word_rank in sorted(ranks.iteritems(), key=lambda x: x[1], reverse=True)[:n_keywords]}
     keywords = set(word_ranks.keys())
@@ -177,12 +177,12 @@ if __name__ == '__main__':
     with open(filename, "r") as f:
         doc = f.read().replace('\n', ' ')
     #print corpus
-    chunks = extract_candidate_chunks(doc)
-    print chunks
+    # chunks = extract_candidate_chunks(doc)
+    # print chunks
     #corpus = []
 
     # sktf = score_keyphrases_by_tfidf(corpus, 'chunks')
     # print sktf
-    skt = score_keyphrases_by_textrank(doc, 0.2)
-    print skt      
+    skt = score_keyphrases_by_textrank(doc, 10)
+    print [key[0] for key in skt]    
     
