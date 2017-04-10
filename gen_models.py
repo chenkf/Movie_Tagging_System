@@ -1,5 +1,7 @@
 import sys
 import pandas as pd
+reload(sys)
+sys.setdefaultencoding('utf-8')
 '''
 from deep_learning import make_mlp, DenseTransformer
 from sklearn.pipeline import Pipeline
