@@ -1,7 +1,15 @@
 import sys
+import os
 import pandas as pd
+from nltk.stem import WordNetLemmatizer
+import re
+import urllib
+import unicodedata
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+
 '''
 from deep_learning import make_mlp, DenseTransformer
 from sklearn.pipeline import Pipeline
@@ -13,8 +21,23 @@ from keras.wrappers.scikit_learn import KerasClassifier
 # http://bdewilde.github.io/blog/2014/09/23/intro-to-automatic-keyphrase-extraction/
 # https://www.airpair.com/nlp/keyword-extraction-tutorial
 
-filename = sys.argv[1]
+files = [file for file in os.listdir('.') if file.startswith('tt')]
 
+wnl = WordNetLemmatizer()
+
+def strip_accents(s):
+   return ''.join(c for c in unicodedata.normalize('NFKD', s.decode('utf-8')) if unicodedata.category(c) != 'Mn')
+
+def str_stem(s): 
+    if isinstance(s, str):
+        s = strip_accents(s)
+        #return " ".join([stemmer.stem(re.sub('[^A-Za-z0-9-./]', ' ', word)) for word in s.lower().split()])
+        return " ".join([wnl.lemmatize(re.sub('[^A-Za-z0-9_.?!;\']', ' ', word)) for word in s.lower().split()])
+    else:
+        return "" 
+
+# phrases we wanna extract:
+# 
 def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
     import itertools, nltk, string
     # exclude candidates that are stop words or entirely punctuation
@@ -44,7 +67,7 @@ def extract_candidate_words(text, good_tags=set(['JJ','JJR','JJS','NN','NNP','NN
                                                                     for sent in nltk.sent_tokenize(text)))
     # filter on certain POS tags and lowercase all words
     candidates = [word.lower() for word, tag in tagged_words
-                  if tag in good_tags and word.lower() not in stop_words
+                  if tag in good_tags and word.lower() not in stop_words if len(word) > 2 
                   and not all(char in punct for char in word)]
 
     return candidates
@@ -73,7 +96,7 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
     # tokenize for all words, and extract *candidate* words
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in nltk.word_tokenize(sent)]
+             for word in nltk.word_tokenize(sent) if len(word) > 2]
     candidates = extract_candidate_words(text)
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
@@ -173,16 +196,27 @@ def extract_candidate_features(candidates, doc_text, doc_excerpt, doc_title):
 
     return candidate_scores
 
-if __name__ == '__main__':
-    with open(filename, "r") as f:
-        doc = f.read().replace('\n', ' ')
-    #print corpus
-    # chunks = extract_candidate_chunks(doc)
-    # print chunks
-    #corpus = []
 
-    # sktf = score_keyphrases_by_tfidf(corpus, 'chunks')
-    # print sktf
-    skt = score_keyphrases_by_textrank(doc, 10)
-    print [key[0] for key in skt]    
-    
+
+if __name__ == '__main__':
+
+    for file in files:
+        with open(file, "r") as f:
+            doc = f.read().replace('\n', ' ')
+            doc = str_stem(doc.encode('utf-8'))
+        #print corpus
+        # chunks = extract_candidate_chunks(doc)
+        # print chunks
+        skt = score_keyphrases_by_textrank(doc, 10)
+        print skt 
+
+    # corpus = [] 
+    # for file in files:
+    #     with open(file, "r") as f:
+    #         doc = f.read().replace('\n', ' ')
+    #         doc = str_stem(doc.encode('utf-8'))
+    #         corpus.append(doc)
+    #     print corpus
+    #     print len(corpus)
+    #     sktf = score_keyphrases_by_tfidf(corpus, 'chunks')
+    #     print sktf
