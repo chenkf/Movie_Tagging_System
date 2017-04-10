@@ -22,6 +22,11 @@ from keras.wrappers.scikit_learn import KerasClassifier
 # https://www.airpair.com/nlp/keyword-extraction-tutorial
 
 files = [file for file in os.listdir('.') if file.startswith('tt')]
+stop_words = set()
+with open("SmartStoplist.txt", "r") as f:
+    for line in f:
+        stop_words.add(line.strip())
+#print stop_words    
 
 wnl = WordNetLemmatizer()
 
@@ -36,13 +41,11 @@ def str_stem(s):
     else:
         return "" 
 
-# phrases we wanna extract:
-# 
 def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
     import itertools, nltk, string
     # exclude candidates that are stop words or entirely punctuation
     punct = set(string.punctuation)
-    stop_words = set(nltk.corpus.stopwords.words('english'))
+    #stop_words = set(nltk.corpus.stopwords.words('english'))
     # tokenize, POS-tag, and chunk using regular expressions
     chunker = nltk.chunk.regexp.RegexpParser(grammar)
     tagged_sents = nltk.pos_tag_sents(nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(text))
@@ -61,7 +64,7 @@ def extract_candidate_words(text, good_tags=set(['JJ','JJR','JJS','NN','NNP','NN
 
     # exclude candidates that are stop words or entirely punctuation
     punct = set(string.punctuation)
-    stop_words = set(nltk.corpus.stopwords.words('english'))
+    #stop_words = set(nltk.corpus.stopwords.words('english'))
     # tokenize and POS-tag words
     tagged_words = itertools.chain.from_iterable(nltk.pos_tag_sents(nltk.word_tokenize(sent)
                                                                     for sent in nltk.sent_tokenize(text)))
@@ -129,9 +132,17 @@ def score_keyphrases_by_textrank(text, n_keywords=0.05):
             keyphrases[' '.join(kp_words)] = avg_pagerank
             # counter as hackish way to ensure merged keyphrases are non-overlapping
             j = i + len(kp_words)
+
     
     return sorted(keyphrases.iteritems(), key=lambda x: x[1], reverse=True)
 
+def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
+    rules = re.compile(grammar)
+    for phrase in keyphrases: 
+        #print phrase[0]
+        if rules.match(phrase[0]) == None:
+            keyphrases.remove(phrase)                        
+    return keyphrases
 
 def extract_candidate_features(candidates, doc_text, doc_excerpt, doc_title):
     import collections, math, nltk, re
@@ -206,8 +217,9 @@ if __name__ == '__main__':
         #print corpus
         # chunks = extract_candidate_chunks(doc)
         # print chunks
-        skt = score_keyphrases_by_textrank(doc, 0.1)
-        print skt 
+        keyphrases = score_keyphrases_by_textrank(doc)
+        keyphrases = post_process(keyphrases)
+        print [phrase[0] for phrase in keyphrases]
 
     # corpus = [] 
     # for file in files:
