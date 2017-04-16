@@ -9,24 +9,12 @@ import unicodedata
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-
-'''
-from deep_learning import make_mlp, DenseTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from keras.wrappers.scikit_learn import KerasClassifier
-'''
-
-# http://bdewilde.github.io/blog/2014/09/23/intro-to-automatic-keyphrase-extraction/
-# https://www.airpair.com/nlp/keyword-extraction-tutorial
-
 files = [file for file in os.listdir('.') if file.startswith('tt')]
 stop_words = set()
 with open("SmartStoplist.txt", "r") as f:
     for line in f:
         stop_words.add(line.strip())
-#print stop_words    
+
 
 wnl = WordNetLemmatizer()
 
@@ -133,7 +121,6 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
             # counter as hackish way to ensure merged keyphrases are non-overlapping
             j = i + len(kp_words)
 
-    
     return sorted(keyphrases.iteritems(), key=lambda x: x[1], reverse=True)
 
 def score_keyphrases_by_singlerank(text):
@@ -148,7 +135,7 @@ def score_keyphrases_by_singlerank(text):
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
     graph.add_nodes_from(set(candidates))
-    # iterate over word-pairs, add unweighted edges into graph
+    # iterate over word-pairs, add weighted edges into graph
     def tenIteratorWise(iterable):
         """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
         iterators = tee(iterable, 10)
@@ -161,8 +148,8 @@ def score_keyphrases_by_singlerank(text):
 
         return izip(*iterators)
 
+    #Each edge in a SingleRank graph has a weight equal to the number of times the two corresponding word types co-occur
     counter = 0
-
     for i in tenIteratorWise(candidates):
 
         if i[9]:
@@ -225,7 +212,6 @@ def score_keyphrases_by_singlerank(text):
 def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
     rules = re.compile(grammar)
     for phrase in keyphrases: 
-        #print phrase[0]
         if rules.match(phrase[0]) == None:
             keyphrases.remove(phrase)                        
     return keyphrases
