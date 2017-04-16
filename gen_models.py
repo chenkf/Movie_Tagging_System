@@ -232,7 +232,6 @@ def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}
 
 
 if __name__ == '__main__':
-
     for file in files:
         with open(file, "r") as f:
             doc = f.read().replace('\n', ' ')
@@ -242,8 +241,10 @@ if __name__ == '__main__':
         # print chunks
 
         keyphrases = score_keyphrases_by_singlerank(doc)
+
         keyphrases = post_process(keyphrases)
-        print [phrase[0] for phrase in keyphrases]
+        print (str(file),[str(phrase[0]) for phrase in keyphrases]) + '\n'
+        print '\n'
     # corpus = [] 
     # for file in files:
     #     with open(file, "r") as f:
