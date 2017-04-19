@@ -14,7 +14,7 @@ for line in titlesIdsFile.readlines():
 
 	pageIndex = 0
 
-	reviewFile = open(id, "w")
+	reviewFile = open("reviews\\" + id, "w")
 
 	proceed = True
 	maxIndex = 1

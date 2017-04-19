@@ -206,7 +206,6 @@ def score_keyphrases_by_singlerank(text):
             # counter as hackish way to ensure merged keyphrases are non-overlapping
             j = i + len(kp_words)
 
-    
     return sorted(keyphrases.iteritems(), key=lambda x: x[1], reverse=True)
 
 def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
@@ -218,6 +217,9 @@ def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}
 
 
 if __name__ == '__main__':
+
+    keyphrasesMovieDic = {}
+
     for file in files:
         with open(file, "r") as f:
             doc = f.read().replace('\n', ' ')
@@ -229,8 +231,28 @@ if __name__ == '__main__':
         keyphrases = score_keyphrases_by_singlerank(doc)
 
         keyphrases = post_process(keyphrases)
-        print (str(file),[str(phrase[0]) for phrase in keyphrases]) + '\n'
-        print '\n'
+        #print (str(file), [str(phrase[0]) for phrase in keyphrases]) + '\n'
+        #print '\n'
+
+        # build key phrases-movie dictionary
+        for phrase in keyphrases:
+
+            if phrase[0] in keyphrasesMovieDic:
+
+                keyphrasesMovieDic[phrase[0]].append(file)
+
+            else:
+
+                keyphrasesMovieDic[phrase[0]] = []
+                keyphrasesMovieDic[phrase[0]].append(file)
+
+    inverseIndexFile = open("inverseIndex.csv", "w")
+    for keyphrase, ids in keyphrasesMovieDic.items():
+
+        inverseIndexFile.write(keyphrase + "|" + " ".join(ids) + "\n")
+
+
+
     # corpus = [] 
     # for file in files:
     #     with open(file, "r") as f:
