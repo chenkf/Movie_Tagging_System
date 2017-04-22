@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+{# According to, http://www.manejandodatos.es/2015/06/flask-and-bootstrap-creating-a-static-web/,
+we have to use url_for to reference css and js files, not href="static/..."!
+#}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css')}}" />
+{% endblock %}
+<!-- 
+{% block scripts %}
+<script src="{{ url_for('static', filename='app.js')}}"></script>
+{% endblock %} -->
+
+<head>
+  <title>Movie Tagging System</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+<form class="form-wrapper cf">
+    <input type="text" placeholder="Search for keyword..." required>
+    <button type="submit">Search</button>
+</form>
+<div class="byline"><p>Movie Tagging System by <a href="mailto:mingyuan@umich.edu">Mingyuan Zhou</a>, <a href="mailto:chenkf@umich.edu">Kaifeng Chen</a> and <a href="mailto:jiataof@umich.edu">Jiatao Fan</a></p>
+</div>
+</body>
+
+</html>
+
+<!-- <a href="http://speckyboy.com/2012/02/15/how-to-build-a-stylish-css3-search-box/">SpeckyBoy</a> featured on <a href="http://thecodeblock.com/search-box-tutorials-using-css3-jquery/">THE CODE BLOCK</a> -->
