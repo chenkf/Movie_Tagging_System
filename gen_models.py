@@ -2,6 +2,7 @@ import sys
 import os
 import pandas as pd
 from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import RegexpTokenizer
 import re
 import urllib
 import unicodedata
@@ -36,7 +37,8 @@ def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <N
     #stop_words = set(nltk.corpus.stopwords.words('english'))
     # tokenize, POS-tag, and chunk using regular expressions
     chunker = nltk.chunk.regexp.RegexpParser(grammar)
-    tagged_sents = nltk.pos_tag_sents(nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(text))
+    tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
+    tagged_sents = nltk.pos_tag_sents(tokenizer.tokenize(sent) for sent in nltk.sent_tokenize(text))
     all_chunks = list(itertools.chain.from_iterable(nltk.chunk.tree2conlltags(chunker.parse(tagged_sent))
                                                     for tagged_sent in tagged_sents))
     # join constituent chunk words into a single chunked phrase
@@ -54,7 +56,8 @@ def extract_candidate_words(text, good_tags=set(['JJ','JJR','JJS','NN','NNP','NN
     punct = set(string.punctuation)
     #stop_words = set(nltk.corpus.stopwords.words('english'))
     # tokenize and POS-tag words
-    tagged_words = itertools.chain.from_iterable(nltk.pos_tag_sents(nltk.word_tokenize(sent)
+    tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
+    tagged_words = itertools.chain.from_iterable(nltk.pos_tag_sents(tokenizer.tokenize(sent)
                                                                     for sent in nltk.sent_tokenize(text)))
     # filter on certain POS tags and lowercase all words
     candidates = [word.lower() for word, tag in tagged_words
