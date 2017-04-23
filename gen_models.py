@@ -2,6 +2,7 @@ import sys
 import os
 import pandas as pd
 from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import RegexpTokenizer
 import re
 import urllib
 import unicodedata
@@ -29,14 +30,15 @@ def str_stem(s):
     else:
         return "" 
 
-def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
+def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>{,2} <IN>)? <JJ>* <NN.*>{,2}}'):
     import itertools, nltk, string
     # exclude candidates that are stop words or entirely punctuation
     punct = set(string.punctuation)
     #stop_words = set(nltk.corpus.stopwords.words('english'))
     # tokenize, POS-tag, and chunk using regular expressions
     chunker = nltk.chunk.regexp.RegexpParser(grammar)
-    tagged_sents = nltk.pos_tag_sents(nltk.word_tokenize(sent) for sent in nltk.sent_tokenize(text))
+    tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
+    tagged_sents = nltk.pos_tag_sents(tokenizer.tokenize(sent) for sent in nltk.sent_tokenize(text))
     all_chunks = list(itertools.chain.from_iterable(nltk.chunk.tree2conlltags(chunker.parse(tagged_sent))
                                                     for tagged_sent in tagged_sents))
     # join constituent chunk words into a single chunked phrase
@@ -54,7 +56,8 @@ def extract_candidate_words(text, good_tags=set(['JJ','JJR','JJS','NN','NNP','NN
     punct = set(string.punctuation)
     #stop_words = set(nltk.corpus.stopwords.words('english'))
     # tokenize and POS-tag words
-    tagged_words = itertools.chain.from_iterable(nltk.pos_tag_sents(nltk.word_tokenize(sent)
+    tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
+    tagged_words = itertools.chain.from_iterable(nltk.pos_tag_sents(tokenizer.tokenize(sent)
                                                                     for sent in nltk.sent_tokenize(text)))
     # filter on certain POS tags and lowercase all words
     candidates = [word.lower() for word, tag in tagged_words
@@ -83,12 +86,17 @@ def score_keyphrases_by_tfidf(texts, candidates='chunks'):
 def score_keyphrases_by_textrank(text, n_keywords=10):
     from itertools import takewhile, tee, izip
     import networkx, nltk
-    
+
+    candidates = extract_candidate_words(text)
+
+    # add a whitespace before dot so we can tokenize dot
+    text=text.replace('.',' .').replace(',',' .')
     # tokenize for all words, and extract *candidate* words
+    tokenizer = RegexpTokenizer(r'[a-zA-Z.]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in nltk.word_tokenize(sent) if len(word) > 2]
-    candidates = extract_candidate_words(text)
+             for word in tokenizer.tokenize(sent) if len(word) > 2 or word =='.']
+    
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
     graph.add_nodes_from(set(candidates))
@@ -126,12 +134,17 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
 def score_keyphrases_by_singlerank(text):
     from itertools import takewhile, tee, izip
     import networkx, nltk
-    
+
+    candidates = extract_candidate_words(text)
+
+    # add a whitespace before dot so we can tokenize dot
+    text=text.replace('.',' .').replace(',',' .')
     # tokenize for all words, and extract *candidate* words
+    tokenizer = RegexpTokenizer(r'[a-zA-Z.]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in nltk.word_tokenize(sent) if len(word) > 2]
-    candidates = extract_candidate_words(text)
+             for word in tokenizer.tokenize(sent) if len(word) > 2 or word =='.']
+    
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
     graph.add_nodes_from(set(candidates))
@@ -208,7 +221,7 @@ def score_keyphrases_by_singlerank(text):
 
     return sorted(keyphrases.iteritems(), key=lambda x: x[1], reverse=True)
 
-def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
+def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>{,3} <IN>)? <JJ>* <NN.*>{,3}}'):
     rules = re.compile(grammar)
     for phrase in keyphrases: 
         if rules.match(phrase[0]) == None:
