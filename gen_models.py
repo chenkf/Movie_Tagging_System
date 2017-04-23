@@ -89,7 +89,7 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
     
     # tokenize for all words, and extract *candidate* words
     tokenizer = RegexpTokenizer(r'[a-zA-Z,.]+')
-    tokenizer2 = 
+    # tokenizer2 = 
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
              for word in tokenizer.tokenize(sent) if len(word) > 2]
