@@ -6,6 +6,7 @@ app = Flask(__name__, template_folder='templates')
 
 # Register the controllers
 app.register_blueprint(controllers.main)
+app.register_blueprint(controllers.search)
 
 #listen to port 3000 so you can just run 'python app.py' to start the server
 if __name__ == '__main__':

@@ -15,4 +15,4 @@ images = soup.find_all(src = re.compile("https://images-na.ssl-images-amazon.com
 
 for i in range(len(titles)):
 
- 	titlesIdsFile.write(titles[i].a.string + "|" + ids[i]["data-tconst"] + "|" + images[i]["src"] + "\n")
+ 	titlesIdsFile.write(titles[i].a.string + "," + ids[i]["data-tconst"] + "," + images[i]["src"] + "\n")

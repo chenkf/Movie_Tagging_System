@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+{# According to, http://www.manejandodatos.es/2015/06/flask-and-bootstrap-creating-a-static-web/,
+we have to use url_for to reference css and js files, not href="static/..."!
+#}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css')}}" />
+{% endblock %}
+
+<head>
+  <title>Movie Tagging System</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+	{% block content %}{% endblock %}
+</body>
+
+</html>
