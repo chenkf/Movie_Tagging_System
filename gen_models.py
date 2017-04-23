@@ -86,14 +86,17 @@ def score_keyphrases_by_tfidf(texts, candidates='chunks'):
 def score_keyphrases_by_textrank(text, n_keywords=10):
     from itertools import takewhile, tee, izip
     import networkx, nltk
-    
+
+    candidates = extract_candidate_words(text)
+
+    # add a whitespace before dot so we can tokenize dot
+    text=text.replace('.',' .').replace(',',' .')
     # tokenize for all words, and extract *candidate* words
-    tokenizer = RegexpTokenizer(r'[a-zA-Z,.]+')
-    # tokenizer2 = 
+    tokenizer = RegexpTokenizer(r'[a-zA-Z.]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in tokenizer.tokenize(sent) if len(word) > 2]
-    candidates = extract_candidate_words(text)
+             for word in tokenizer.tokenize(sent) if len(word) > 2 or word =='.']
+    
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
     graph.add_nodes_from(set(candidates))
@@ -131,13 +134,17 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
 def score_keyphrases_by_singlerank(text):
     from itertools import takewhile, tee, izip
     import networkx, nltk
-    
+
+    candidates = extract_candidate_words(text)
+
+    # add a whitespace before dot so we can tokenize dot
+    text=text.replace('.',' .').replace(',',' .')
     # tokenize for all words, and extract *candidate* words
-    tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
+    tokenizer = RegexpTokenizer(r'[a-zA-Z.]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in tokenizer.tokenize(sent) if len(word) > 2]
-    candidates = extract_candidate_words(text)
+             for word in tokenizer.tokenize(sent) if len(word) > 2 or word =='.']
+    
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
     graph.add_nodes_from(set(candidates))
@@ -214,7 +221,7 @@ def score_keyphrases_by_singlerank(text):
 
     return sorted(keyphrases.iteritems(), key=lambda x: x[1], reverse=True)
 
-def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.{,2}>+ <IN>)? <JJ>* <NN.{,2}>+}'):
+def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>{,3} <IN>)? <JJ>* <NN.*>{,3}}'):
     rules = re.compile(grammar)
     for phrase in keyphrases: 
         if rules.match(phrase[0]) == None:
