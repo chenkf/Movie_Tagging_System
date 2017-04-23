@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer
+from nltk.corpus import stopwords
 import re
 import urllib
 import unicodedata
@@ -30,7 +31,7 @@ def str_stem(s):
     else:
         return "" 
 
-def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>{,2} <IN>)? <JJ>* <NN.*>{,2}}'):
+def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>{,3} <IN>)? <JJ>* <NN.*>{,3}}'):
     import itertools, nltk, string
     # exclude candidates that are stop words or entirely punctuation
     punct = set(string.punctuation)
@@ -95,7 +96,7 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
     tokenizer = RegexpTokenizer(r'[a-zA-Z.]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in tokenizer.tokenize(sent) if len(word) > 2 or word =='.']
+             for word in tokenizer.tokenize(sent) if word not in stopwords.words('english') or word =='.']
     
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
@@ -143,7 +144,7 @@ def score_keyphrases_by_singlerank(text):
     tokenizer = RegexpTokenizer(r'[a-zA-Z.]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in tokenizer.tokenize(sent) if len(word) > 2 or word =='.']
+             for word in tokenizer.tokenize(sent) if word not in stopwords.words('english') or word =='.']
     
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
@@ -241,7 +242,7 @@ if __name__ == '__main__':
         # chunks = extract_candidate_chunks(doc)
         # print chunks
 
-        keyphrases = score_keyphrases_by_singlerank(doc)
+        keyphrases = score_keyphrases_by_textrank(doc)
 
         keyphrases = post_process(keyphrases)
         #print (str(file), [str(phrase[0]) for phrase in keyphrases]) + '\n'
