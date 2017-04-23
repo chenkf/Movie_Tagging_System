@@ -30,7 +30,7 @@ def str_stem(s):
     else:
         return "" 
 
-def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
+def extract_candidate_chunks(text, grammar=r'KT: {(<JJ>* <NN.*>{,2} <IN>)? <JJ>* <NN.*>{,2}}'):
     import itertools, nltk, string
     # exclude candidates that are stop words or entirely punctuation
     punct = set(string.punctuation)
@@ -88,9 +88,11 @@ def score_keyphrases_by_textrank(text, n_keywords=10):
     import networkx, nltk
     
     # tokenize for all words, and extract *candidate* words
+    tokenizer = RegexpTokenizer(r'[a-zA-Z,.]+')
+    tokenizer2 = 
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in nltk.word_tokenize(sent) if len(word) > 2]
+             for word in tokenizer.tokenize(sent) if len(word) > 2]
     candidates = extract_candidate_words(text)
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
@@ -131,9 +133,10 @@ def score_keyphrases_by_singlerank(text):
     import networkx, nltk
     
     # tokenize for all words, and extract *candidate* words
+    tokenizer = RegexpTokenizer(r'[a-zA-Z]+')
     words = [word.lower()
              for sent in nltk.sent_tokenize(text)
-             for word in nltk.word_tokenize(sent) if len(word) > 2]
+             for word in tokenizer.tokenize(sent) if len(word) > 2]
     candidates = extract_candidate_words(text)
     # build graph, each node is a unique candidate
     graph = networkx.Graph()
@@ -211,7 +214,7 @@ def score_keyphrases_by_singlerank(text):
 
     return sorted(keyphrases.iteritems(), key=lambda x: x[1], reverse=True)
 
-def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.*>+ <IN>)? <JJ>* <NN.*>+}'):
+def post_process(keyphrases, grammar=r'KT: {(<JJ>* <NN.{,2}>+ <IN>)? <JJ>* <NN.{,2}>+}'):
     rules = re.compile(grammar)
     for phrase in keyphrases: 
         if rules.match(phrase[0]) == None:
