@@ -260,7 +260,7 @@ if __name__ == '__main__':
                 keyphrasesMovieDic[phrase[0]] = []
                 keyphrasesMovieDic[phrase[0]].append(file)
 
-    inverseIndexFile = open("inverseIndex.csv", "w")
+    inverseIndexFile = open("inverseIndex_textrank.csv", "w")
     for keyphrase, ids in keyphrasesMovieDic.items():
 
         inverseIndexFile.write(keyphrase + "|" + " ".join(ids) + "\n")

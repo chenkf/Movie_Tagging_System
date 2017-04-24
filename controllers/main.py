@@ -1,5 +1,6 @@
 from flask import *
 import csv
+from nltk.stem import WordNetLemmatizer
 
 #from datetime import datetime
 #from collections import namedtuple
@@ -11,7 +12,7 @@ def main_route():
 
 	keyphrases = []
 	movie_ids = []
-	with open('inverseIndex.csv','r') as f:
+	with open('inverseIndex_singlerank.csv','r') as f:
 		reader = csv.reader(f, delimiter='|')
 		for keyphrase, movie_id in reader:
 			keyphrase_list = keyphrase.split()
@@ -26,11 +27,19 @@ def main_route():
 		keyword_query = request.form['keyword-search']
 		print keyword_query
 		query_list = keyword_query.split()
+		retrieved_movie_ids = ''
+		lemmatizer = WordNetLemmatizer()
 		for i, keyphrase_list in enumerate(keyphrases):
-			if all(x in query_list for x in keyphrase_list):
-				print "id: "
-				print movie_ids[i]
-				return redirect(url_for('search.search_route', movieIds=movie_ids[i]))
+			keyphrase_list = [lemmatizer.lemmatize(x) for x in keyphrase_list]
+			# all terms in query must be contained by keyphrase_list
+			if all(lemmatizer.lemmatize(x) in keyphrase_list for x in query_list):
+				# print "id: "
+				# print movie_ids[i]
+				retrieved_movie_ids += movie_ids[i] + ' '
+		print "id: "
+		print retrieved_movie_ids
+		if len(retrieved_movie_ids) > 1:
+			return redirect(url_for('search.search_route', movieIds=retrieved_movie_ids))
 	options = {
 	}
-	return render_template("index.html", **options)	
+	return render_template("index.html", **options)
